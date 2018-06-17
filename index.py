@@ -2,6 +2,7 @@
 import os
 import sys
 import web
+import requests
 
 urls = (
 '/', 'index'
