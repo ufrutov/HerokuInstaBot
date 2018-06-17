@@ -1,1 +1,1 @@
-web: gunicorn HerokuInstaBot.wsgi --log-file -
+web: python index.py
