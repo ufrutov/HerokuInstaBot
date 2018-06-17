@@ -3,4 +3,5 @@ chardet==3.0.4
 idna==2.7
 requests==2.19.1
 urllib3==1.23
-gunicorn==*
+web.py==0.37
+gunicorn==0.14.2
