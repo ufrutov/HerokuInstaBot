@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+gunicorn = "*"
 certifi = "==2018.4.16"
 chardet = "==3.0.4"
 idna = "==2.7"
