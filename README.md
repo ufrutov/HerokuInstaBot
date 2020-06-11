@@ -2,11 +2,7 @@
 
 ### References
 
-* [Heroku Node Tekegram Bot](https://github.com/volodymyrlut/heroku-node-telegram-bot) - pure telegram bot using node.js
-* [Node Telegram Bot API](https://github.com/yagop/node-telegram-bot-api/blob/master/doc/tutorials.md) - Api that make magic
-* [Instagram Save](https://www.npmjs.com/package/instagram-save) - npm package for Insragram post retrieving
-
-Follow steps from [Heroku Node Tekegram Bot](https://github.com/volodymyrlut/heroku-node-telegram-bot) repo and run it at Heroku server
+* [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot) - pure telegram bot using Python
 
 ### Useful commands
 
@@ -19,3 +15,7 @@ View Heroku server logs:
 ``
 heroku logs --tail
 ``
+
+### Instagram response fails
+
+Instagram can avoid to send required data right for Heroku server, use proxy with Python Requests to get correct response from Instagram.
