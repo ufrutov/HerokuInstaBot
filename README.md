@@ -34,9 +34,9 @@ $ git push heroku master
 ```
 
 View Heroku server logs:  
-``
+```
 heroku logs --tail
-``
+```
 
 ### Instagram response fails
 
