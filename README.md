@@ -5,12 +5,13 @@
 * [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot) - pure telegram bot using Python
 
 #### Deploy using Heroku Git
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)  
+
 Use git in the command line or a GUI tool to deploy this app.
 
 ##### Install the Heroku CLI
 
-Download and install the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-command-line).
+Download and install the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-command-line).  
 If you haven't already, log in to your Heroku account and follow the prompts to create a new SSH public key.
 
 ```
@@ -32,7 +33,7 @@ $ git commit -am "make it better"
 $ git push heroku master
 ```
 
-View Heroku server logs:
+View Heroku server logs:  
 ``
 heroku logs --tail
 ``
