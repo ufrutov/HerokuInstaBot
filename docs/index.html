@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ufrutov.github.io/HerokuInstaBot</title>
+	<style>
+		body { text-align: center; font-family: monospace; padding: 1rem; margin: 0; }
+		img { display: block; margin-left: auto; margin-right: auto; max-width: 100%; margin-bottom: 1rem; }
+		img:last-of-type { margin-bottom: 0; }
+	</style>
+</head>
+<body id="body">
+	<script type="text/javascript">
+		(function() {
+			const urlParams = (new URL(window.location.href)).searchParams;
+			let url = urlParams.get("i");
+
+			if( url !== null ) {
+				url = createUrl(url);
+
+				fetch(url)
+					.then(response => response.json())
+					.then(data => {
+						console.log(data);
+
+						const output = parse(data);
+
+						if( output.success ) {
+							const body = document.getElementById('body');
+							for ( i in output.data ) {
+								const item = document.createElement('img');
+								item.src = output.data[i];
+								item.onclick = () => {
+									try {
+										navigator.share({
+											url: output.data[i]
+										})
+									} catch(e) {
+										console.warn(e);
+									}
+								}
+
+								body.appendChild(item);
+							}
+						} else {
+							body.innerText = output.error;
+						}
+					});
+
+			} else {
+				body.innerText = 'No URL found';
+			}
+		})();
+
+		function createUrl(urlOrMediaId) {
+			if( isUrl(urlOrMediaId) ) {
+				return convertUrl(urlOrMediaId);
+			} else {
+				return convertUrl(`https://www.instagram.com/p/${urlOrMediaId}/`);
+			}
+		}
+
+		function isUrl(urlOrMediaId) {
+			return urlOrMediaId.substring(0, 8) === 'https://' || urlOrMediaId.substring(0, 7) === 'http://';
+		}
+
+		function getUrlArgs(url) {
+			return url.split("?");
+		}
+
+		function convertUrl(url) {
+			if( getUrlArgs(url).length > 1 ) {
+				return url + "&__a=1";
+			} else {
+				return url + "?__a=1";
+			}
+		}
+
+		function parse(response) {
+			if( response.hasOwnProperty('graphql') ) {
+        if( response['graphql'].hasOwnProperty('shortcode_media') ) {
+          const media = response['graphql']['shortcode_media'];
+
+          // Multi photo post processing
+          if( media.hasOwnProperty('edge_sidecar_to_children') ) {
+            const children = media['edge_sidecar_to_children'];
+            if( children.hasOwnProperty('edges') ) {
+              const edges = children['edges'];
+              if( edges.length > 0 ) {
+                var data = [];
+                edges.forEach(function(element) {
+                  if( element.node.hasOwnProperty('display_url') &&
+                      element.node['display_url'].length > 0 ) {
+                    data.push(element.node['display_url']);
+                  }
+                });
+                if( data.length > 0 ) {
+                  return {
+                    data: data,
+                    success: true
+                  };
+                } else {
+                  return {
+                  	success: false,
+                  	error: 'All "edges" items are empty at multi photos post request response.'
+                  };
+                }
+              } else {
+                return {
+                	success: false,
+                	error: '"edges" field is empty at multi photos post request response.'
+                };
+              }
+            } else {
+              return {
+              	success: false,
+              	error: 'No "edges" field in "edge_sidecar_to_children" property of multi photos post request response.'
+              };
+            }
+          } else {
+            if( media.hasOwnProperty('display_url') &&
+                media['display_url'].length > 0 ) {
+
+              // Single image post
+              return {
+                data: [media['display_url']],
+                success: true
+              };
+            } else {
+              return {
+              	success: false,
+              	error: 'No or empty "display_url" field in single post request response.'
+              };
+            }
+          }
+        } else {
+          return {
+          	success: false,
+          	error: 'No "shortcode_media" field in post request response.'
+          };
+        }
+      } else {
+        return {
+        	success: false,
+        	error: 'No "graphql" field in post request response.'
+        };
+      }
+		}
+	</script>
+</body>
+</html>
