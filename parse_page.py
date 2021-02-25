@@ -13,6 +13,11 @@ def get_url_args(URL):
     args = URL.split('?')
     return len(args)
 
+def get_url_code(URL):
+    url_code = URL.split('p/')[1]
+    code = url_code.split('/')[0]
+    return code
+
 def convert_URL(URL):
     if get_url_args(URL) > 1:
         return URL + '&__a=1'
@@ -22,10 +27,8 @@ def convert_URL(URL):
 def get_page(text):
     URL = create_url(text)
 
-    proxy = { 'https': '109.70.189.56:42770' }
-
     try:
-        content = requests.get(URL, proxies=proxy, headers={'accept': 'application/json'}, timeout=10.0)
+        content = requests.get(URL, headers={'accept': 'application/json'}, timeout=10.0)
     except requests.exceptions.RequestException as e:
         return { 'success': False, 'content': 'URL request error: requests.exceptions.RequestException - {0}'.format(e) }
 
@@ -40,7 +43,8 @@ def get_page(text):
         except Exception as e:
             return { 'success': False, 'content': 'Page content processing error, Exception: {0}.'.format(e) }
     else:
-        return { 'success': False, 'content': 'URL request error: status code - {0}'.format(str(content.status_code)) }
+        page = 'https://ufrutov.github.io/HerokuInstaBot/?i={0}'.format(get_url_code(URL))
+        return { 'success': False, 'content': 'URL request error: status code - {0}\nGo to page {1}'.format(str(content.status_code), page) }
 
 
 def parse_page(response):
