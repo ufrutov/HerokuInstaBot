@@ -12,16 +12,14 @@
 	<script type="text/javascript">
 		(function() {
 			const urlParams = (new URL(window.location.href)).searchParams;
-			let url = urlParams.get("i");
+			let code = urlParams.get("i");
 
-			if( url !== null ) {
-				url = createUrl(url);
+			if( code !== null ) {
+				url = createUrl(code);
 
 				fetch(url)
 					.then(response => response.json())
 					.then(data => {
-						console.log(data);
-
 						const output = parse(data);
 
 						if( output.success ) {
@@ -29,13 +27,36 @@
 							for ( i in output.data ) {
 								const item = document.createElement('img');
 								item.src = output.data[i];
+
 								item.onclick = () => {
 									try {
+										fetch(item.src)
+											.then((responseBlob) => responseBlob.blob())
+											.then((blob) => {
+												const file = new File([blob], "picture.jpg", {type: 'image/jpeg'});
+												const filesArray = [file];
+
+												if(navigator.canShare && navigator.canShare({ files: filesArray })) {
+													navigator.share({
+														text: code,
+														files: filesArray,
+														title: code,
+														url: item.src
+													});
+												} else {
+													// navigator.canShare FALSE
+													body.innerText = '[E] navigator.canShare returns FALSE';
+												}
+											})
+											.catch((error) => {
+												console.warn('[E] fetch image src catched with error:', error);
+											});
+
 										navigator.share({
 											url: output.data[i]
 										})
 									} catch(e) {
-										console.warn(e);
+										console.warn('[E] fetch image src failed with error:', e);
 									}
 								}
 
@@ -44,8 +65,12 @@
 						} else {
 							body.innerText = output.error;
 						}
+					})
+					.catch((error) => {
+						body.innerText = '[E] fetch url catched with error: ' + url + '\n\nCheck console output.';
+						console.warn('[E] fetch url catched with error:', url);
+						console.warn('[E] fetch url catched with error:', error);
 					});
-
 			} else {
 				body.innerText = 'No URL found';
 			}
@@ -77,73 +102,73 @@
 
 		function parse(response) {
 			if( response.hasOwnProperty('graphql') ) {
-        if( response['graphql'].hasOwnProperty('shortcode_media') ) {
-          const media = response['graphql']['shortcode_media'];
+				if( response['graphql'].hasOwnProperty('shortcode_media') ) {
+					const media = response['graphql']['shortcode_media'];
 
-          // Multi photo post processing
-          if( media.hasOwnProperty('edge_sidecar_to_children') ) {
-            const children = media['edge_sidecar_to_children'];
-            if( children.hasOwnProperty('edges') ) {
-              const edges = children['edges'];
-              if( edges.length > 0 ) {
-                var data = [];
-                edges.forEach(function(element) {
-                  if( element.node.hasOwnProperty('display_url') &&
-                      element.node['display_url'].length > 0 ) {
-                    data.push(element.node['display_url']);
-                  }
-                });
-                if( data.length > 0 ) {
-                  return {
-                    data: data,
-                    success: true
-                  };
-                } else {
-                  return {
-                  	success: false,
-                  	error: 'All "edges" items are empty at multi photos post request response.'
-                  };
-                }
-              } else {
-                return {
-                	success: false,
-                	error: '"edges" field is empty at multi photos post request response.'
-                };
-              }
-            } else {
-              return {
-              	success: false,
-              	error: 'No "edges" field in "edge_sidecar_to_children" property of multi photos post request response.'
-              };
-            }
-          } else {
-            if( media.hasOwnProperty('display_url') &&
-                media['display_url'].length > 0 ) {
+					// Multi photo post processing
+					if( media.hasOwnProperty('edge_sidecar_to_children') ) {
+						const children = media['edge_sidecar_to_children'];
+						if( children.hasOwnProperty('edges') ) {
+							const edges = children['edges'];
+							if( edges.length > 0 ) {
+								var data = [];
+								edges.forEach(function(element) {
+									if( element.node.hasOwnProperty('display_url') &&
+											element.node['display_url'].length > 0 ) {
+										data.push(element.node['display_url']);
+									}
+								});
+								if( data.length > 0 ) {
+									return {
+										data: data,
+										success: true
+									};
+								} else {
+									return {
+										success: false,
+										error: 'All "edges" items are empty at multi photos post request response.'
+									};
+								}
+							} else {
+								return {
+									success: false,
+									error: '"edges" field is empty at multi photos post request response.'
+								};
+							}
+						} else {
+							return {
+								success: false,
+								error: 'No "edges" field in "edge_sidecar_to_children" property of multi photos post request response.'
+							};
+						}
+					} else {
+						if( media.hasOwnProperty('display_url') &&
+								media['display_url'].length > 0 ) {
 
-              // Single image post
-              return {
-                data: [media['display_url']],
-                success: true
-              };
-            } else {
-              return {
-              	success: false,
-              	error: 'No or empty "display_url" field in single post request response.'
-              };
-            }
-          }
-        } else {
-          return {
-          	success: false,
-          	error: 'No "shortcode_media" field in post request response.'
-          };
-        }
-      } else {
-        return {
-        	success: false,
-        	error: 'No "graphql" field in post request response.'
-        };
-      }
+							// Single image post
+							return {
+								data: [media['display_url']],
+								success: true
+							};
+						} else {
+							return {
+								success: false,
+								error: 'No or empty "display_url" field in single post request response.'
+							};
+						}
+					}
+				} else {
+					return {
+						success: false,
+						error: 'No "shortcode_media" field in post request response.'
+					};
+				}
+			} else {
+				return {
+					success: false,
+					error: 'No "graphql" field in post request response.'
+				};
+			}
 		}
 	</script>
 </body>
